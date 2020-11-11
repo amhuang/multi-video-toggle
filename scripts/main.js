@@ -12,13 +12,16 @@ var player = function() {
         duration,   // in sec
         skipTo,
         currTime,
-        source;
+        source,
+        height = JSON.parse(h),
+        initHeightTime = height[0][1];
 
     /* ----- INITIALIZING FUNCTIONS ----- */
 
     function cache() {
         DOM.vid = document.getElementById('video');
         //source = document.createElement('source');
+        DOM.vidWindow = $('.video-container');
 
         DOM.icons = $('.playback-icons use');
         DOM.play = $('#play');
@@ -30,16 +33,20 @@ var player = function() {
         DOM.seekDiv = $('#seek-div');
 
         DOM.cameras = $('.nav-container button');
+        DOM.height = $('#height');
+
+        setup();
     }
 
     function bindEvents() {
+        $(document).on('keydown', keyPress);
+        $(window).on('resize', resizing);
+
         DOM.vid.addEventListener('loadedmetadata', initVideo);
         DOM.vid.addEventListener('timeupdate', updateTime);
 
         DOM.play.on('click', togglePlay);
-
         DOM.progress.on('click', renderProgress.bind(DOM.progress));
-
         DOM.seekInput.on({
             mousemove: seeking,
             mouseleave: function() { DOM.seekDiv.hide(); },
@@ -54,13 +61,14 @@ var player = function() {
         DOM.cameras.eq(5).on('click', swap.bind(null, 5));
     }
 
-    function videoSrcs() {
-        DOM.cameras.eq(0).data('path', '/Users/andrea/Downloads/videos/test1.MP4');
-        DOM.cameras.eq(1).data('path', '/Users/andrea/Downloads/videos/test2.MP4');
-        DOM.cameras.eq(2).data('path', '/Users/andrea/Downloads/videos/test3.MP4');
-        DOM.cameras.eq(3).data('path', '/Users/andrea/Downloads/videos/test1.MP4');
-        DOM.cameras.eq(4).data('path', '/Users/andrea/Downloads/videos/test2.MP4');
-        DOM.cameras.eq(5).data('path', '/Users/andrea/Downloads/videos/test3.MP4');
+    function setup() {
+        DOM.cameras.eq(0).data('path', './videos/video1.MP4');
+        DOM.cameras.eq(1).data('path', './videos/video2.MP4');
+        DOM.cameras.eq(2).data('path', './videos/video3.MP4');
+        DOM.cameras.eq(3).data('path', './videos/video4.MP4');
+        DOM.cameras.eq(4).data('path', './videos/video5.MP4');
+        DOM.cameras.eq(5).data('path', './videos/video6.MP4');
+        resizing();
     }
 
     /* ----- EVENT HANDLERS ----- */
@@ -72,6 +80,7 @@ var player = function() {
         } else {
             DOM.vid.pause();
         }
+        currTime = DOM.vid.currentTime;
     }
 
     // t given in seconds
@@ -85,7 +94,6 @@ var player = function() {
     }
 
     function initVideo() {
-
         duration = Math.round(DOM.vid.duration);
         let formatted = formatTime(duration);
 
@@ -100,10 +108,12 @@ var player = function() {
     }
 
     function updateTime() {
-        let sec = DOM.vid.currentTime;
-        DOM.seekInput.val(sec);
-        DOM.progress.val(sec);
-        DOM.timeElapsed.html(formatTime(sec));
+        currTime = DOM.vid.currentTime;
+        console.log(currTime);
+        DOM.seekInput.val(currTime);
+        DOM.progress.val(currTime);
+        DOM.timeElapsed.html(formatTime(currTime));
+        renderHeight(currTime);
     }
 
     function seeking(e) {
@@ -122,6 +132,7 @@ var player = function() {
         DOM.vid.currentTime = skipTo;
         DOM.progress.val(skipTo);
         DOM.seekInput.val(skipTo);
+        currTime = skipTo;
     }
 
     function renderProgress(e) {
@@ -129,7 +140,7 @@ var player = function() {
 
         currTime = pos * DOM.vid.duration;
         DOM.vid.currentTime = currTime;
-        console.log(currTime);
+        console.log(Math.round);
         seeking = false;
     }
 
@@ -149,14 +160,46 @@ var player = function() {
         } catch (e) {
             console.log(e);
         }
+    }
 
+    function keyPress(event) {
+        if (skipTo == null) {
+            skipTo = 0;
+        } else {
+            skipTo = currTime
+        }
+
+        if (event.key == "ArrowRight") {
+            skipTo += 0.5;
+        } else if (event.key == "ArrowLeft") {
+            skipTo -= 0.5;
+        }
+        console.log(skipTo);
+        skip();
+    }
+
+    // Assumes entries are 0.5sec apart
+    function renderHeight(currTime) {
+        let i = Math.round(currTime / 0.5);
+        try {
+            DOM.height.html("Height: " + height[i][0].toFixed(2) + " ft");
+        } catch {
+            console.log('out of range');
+        }
+
+    }
+
+    function resizing() {
+        DOM.vidWindow.css({
+            "max-height": (window.innerHeight - 120) + "px",
+            "max-width": ((window.innerHeight - 120)*(16/9)) + "px",
+        });
     }
 
     /* ----- PUBLIC METHODS & EXPORT ----- */
 
     function init() {
         cache();
-        videoSrcs();
         bindEvents();
     }
 
