@@ -22,6 +22,7 @@ var player = function() {
     function cache() {
 
         DOM.vid = document.querySelectorAll("video");
+
         DOM.vidWindow = $('#all-videos');
 
         DOM.icons = $('.playback-icons use');
@@ -41,13 +42,11 @@ var player = function() {
 
     function bindEvents() {
 
-        $(document).on('keydown', keyPress);
+        $(document).on('keydown', keyScrub);
         // $(window).on('resize', resizing);
 
-        DOM.vid.forEach( function (vid) {
-            vid.addEventListener('loadedmetadata', initVideo);
-            vid.addEventListener('timeupdate', updateTime);
-        });
+        DOM.vid.item(0).addEventListener('loadedmetadata', initVideo);
+        DOM.vid.item(0).addEventListener('timeupdate', updateTime);
 
         DOM.play.on('click', togglePlay);
         DOM.progress.on('click', renderProgress.bind(DOM.progress));
@@ -57,9 +56,6 @@ var player = function() {
             input: skip
         });
 
-        for (let i = 0; i < 6; i++) {
-            DOM.cameras.eq(i).on('click', swap.bind(null, i));
-        }
     }
 
     /*
@@ -82,7 +78,6 @@ var player = function() {
 
         if (DOM.vid.item(0).paused || DOM.vid.item(0).ended) {
             DOM.vid.forEach(function (vid) {
-                console.log(vid);
                 vid.play();
             });
         } else {
@@ -108,9 +103,8 @@ var player = function() {
     /*
     Gets, stores, and displays total duration of video
     */
-
     function initVideo() {
-        duration = Math.round(DOM.vid.duration);
+        duration = Math.round(DOM.vid.item(0).duration);
         let formatted = formatTime(duration);
 
         if (!isNaN(duration)) {
@@ -130,7 +124,6 @@ var player = function() {
 
     function updateTime() {
         currTime = DOM.vid.item(0).currentTime;
-        console.log(currTime);
         DOM.seekInput.val(currTime);
         DOM.progress.val(currTime);
         DOM.timeElapsed.html(formatTime(currTime));
@@ -146,6 +139,7 @@ var player = function() {
     function seeking(e) {
         skipTo = Math.round((e.offsetX / e.target.clientWidth) *
             parseInt(event.target.getAttribute('max'), 10));
+        console.log(skipTo);
 
         let formatted = formatTime(skipTo);
         // let rect = DOM.vid.getBoundingClientRect();
@@ -161,7 +155,11 @@ var player = function() {
     */
 
     function skip() {
-        DOM.vid.currentTime = skipTo;
+
+        DOM.vid.forEach( function(vid) {
+
+            vid.currentTime = skipTo;
+        });
         DOM.progress.val(skipTo);
         DOM.seekInput.val(skipTo);
         currTime = skipTo;
@@ -175,14 +173,54 @@ var player = function() {
         let pos = (e.pageX  - (this.offsetLeft + this.offsetParent.offsetLeft)) / this.offsetWidth;
 
         currTime = pos * DOM.vid.duration;
-        DOM.vid.currentTime = currTime;
+        DOM.vid.item(0).currentTime = currTime;
         console.log(Math.round);
         seeking = false;
     }
 
     /*
-    Swaps two videos upon clicking a button to go to a different camera.
+    Allows scrubbing with the left and right arrow keys. Each press moves
+    the video by 0.5s.
     */
+
+    function keyScrub(event) {
+        if (skipTo == null) {
+            skipTo = 0;
+        } else {
+            skipTo = currTime;
+        }
+
+        if (event.key == "ArrowRight") {
+            skipTo += 0.5;
+        } else if (event.key == "ArrowLeft") {
+            skipTo -= 0.5;
+        }
+        skip();
+    }
+
+    /*
+    Loads the height from height.json and displays it based off of
+    the timestamp of the video. ENTRIES MUST BE TAKEN EVERY 0.5s APART
+    FOR HEIGHT AND VIDEO TO LINE UP
+    */
+
+    function renderHeight(currTime) {
+        let i = Math.round(currTime / 0.5);
+        try {
+            DOM.height.html("Height: " + height[i][0].toFixed(2) + " ft");
+        } catch {
+            console.log('out of range');
+        }
+
+    }
+
+
+    /*
+    Swaps two videos upon clicking a button to go to a different camera.
+
+    DEPRECIATED: viewing all cameras at once so no need to view
+    */
+
     function swap(n) {
         currTime = DOM.vid.currentTime;
 
@@ -202,45 +240,12 @@ var player = function() {
     }
 
     /*
-    Allows scrubbing through right and left arrow presses.
-    */
-    function keyPress(event) {
-        if (skipTo == null) {
-            skipTo = 0;
-        } else {
-            skipTo = currTime
-        }
-
-        if (event.key == "ArrowRight") {
-            skipTo += 0.5;
-        } else if (event.key == "ArrowLeft") {
-            skipTo -= 0.5;
-        }
-        console.log(skipTo);
-        skip();
-    }
-
-    /*
-    Loads the height from height.json and displays it based off of
-    the timestamp of the video. ENTRIES MUST BE TAKEN EVERY 0.5s APART
-    FOR HEIGHT AND VIDEO TO LINE UP
-    */
-    function renderHeight(currTime) {
-        let i = Math.round(currTime / 0.5);
-        try {
-            DOM.height.html("Height: " + height[i][0].toFixed(2) + " ft");
-        } catch {
-            console.log('out of range');
-        }
-
-    }
-
-    /*
     Used in setup. Fixes sizing of video in 16:9 to make sure entire video
     is visible in window.
 
     DEPRECIATED: Videos not view in full window by default ATM
     */
+
     function resizing() {
         DOM.vidWindow.css({
             "max-height": (window.innerHeight - 120) + "px",

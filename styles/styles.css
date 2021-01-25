@@ -97,12 +97,15 @@ button.fullscreen {
 }
 
 .video-container {
+
+	/*
 	position: relative;
 	background-color: transparent;
-	width: 20%;
-	height: 50%;
+	width: 25%;
+	height: 33%;
 	float: left;
 	z-index: 0;
+	*/
 }
 
 .bottom-container {
