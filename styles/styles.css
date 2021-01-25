@@ -22,6 +22,24 @@ h2 {  /* Stats and data text */
 	font-size: 14pt;
 	letter-spacing: 0.009375em;
 }
+button.fullscreen {
+	-webkit-appearance: none;
+	background: url(../images/expand.png);
+	top: 16px;
+	right: 16px;
+	background-color: transparent;
+	background-size: 100%;
+	outline: none;
+	border: none;
+	height: 18px;
+	width: 18px;
+	position: absolute;
+	opacity: .6;
+	-webkit-transition: .2s;
+	transition: opacity .2s;
+	z-index: 1;
+	cursor: pointer;
+}
 .page-container {
 	display: grid;
 	height: 100%;
@@ -62,13 +80,31 @@ h2 {  /* Stats and data text */
 .nav-container button:hover {
 	filter: brightness(80%);
 }
-.video-container {
+/*.video-container {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translateX(-50%) translateY(-50%);
+	width: 100%;
+}*/
+
+#all-videos {
 	position: absolute;
 	top: 50%;
 	left: 50%;
 	transform: translateX(-50%) translateY(-50%);
 	width: 100%;
 }
+
+.video-container {
+	position: relative;
+	background-color: transparent;
+	width: 20%;
+	height: 50%;
+	float: left;
+	z-index: 0;
+}
+
 .bottom-container {
 	width: 100%;
 	height: 60px;

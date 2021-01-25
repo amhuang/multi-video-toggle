@@ -10,6 +10,7 @@
 <body ondragstart="return false;" ondrop="return false;">
 <div class="page-container">
 
+<!--
 	<div class="nav-container">
 		<h2 style="text-align: center; padding-top: 6px;">Camera: </h2>
 		<button><h2>1</h2></button>
@@ -19,11 +20,82 @@
 		<button><h2>5</h2></button>
 		<button><h2>6</h2></button>
 	</div>
+-->
 
+<!--
 	<div class="video-container">
 		<video id="video">
 			<source src="./videos/video1.MP4" type="video/mp4"></source>
 		</video>
+	</div>
+-->
+
+	<div id='all-videos'>
+			<div class="video-container">
+				<button class="fullscreen" id="fullscreen-1"></button>
+				<video id="video-1"  preload="metadata">
+					<source src="/Users/andrea/GitHub/multi-video-toggle/videos/video2-480.m4v" type="video/mp4"></source>
+				</video>
+			</div>
+			<div class="video-container">
+				<button class="fullscreen" id="fullscreen-2"></button>
+				<video id="video-2"  preload="metadata">
+					<source src="/Users/andrea/GitHub/multi-video-toggle/videos/video2-480.m4v" type="video/mp4"></source>
+				</video>
+			</div>
+			<div class="video-container">
+				<button class="fullscreen" id="fullscreen-3"></button>
+				<video id="video-3"  preload="metadata">
+					<source src="/Users/andrea/GitHub/multi-video-toggle/videos/video2-480.m4v" type="video/mp4"></source>
+				</video>
+			</div>
+			<div class="video-container">
+				<button class="fullscreen" id="fullscreen-4"></button>
+				<video id="video-4"  preload="metadata">
+					<source src="/Users/andrea/GitHub/multi-video-toggle/videos/video2-480.m4v" type="video/mp4"></source>
+				</video>
+			</div>
+			<div class="video-container">
+				<button class="fullscreen" id="fullscreen-5"></button>
+				<video id="video-5"  preload="metadata">
+					<source src="/Users/andrea/GitHub/multi-video-toggle/videos/video2-480.m4v" type="video/mp4"></source>
+				</video>
+			</div>
+
+			<div class="video-container">
+				<button class="fullscreen" id="fullscreen-6"></button>
+				<video id="video-6"  preload="metadata">
+					<source src="/Users/andrea/GitHub/multi-video-toggle/videos/video2-480.m4v" type="video/mp4"></source>
+				</video>
+			</div>
+			<div class="video-container">
+				<button class="fullscreen" id="fullscreen-7"></button>
+				<video id="video-7"  preload="metadata">
+					<source src="/Users/andrea/GitHub/multi-video-toggle/videos/video2-480.m4v" type="video/mp4"></source>
+				</video>
+			</div>
+			<div class="video-container">
+				<button class="fullscreen" id="fullscreen-8"></button>
+				<video id="video-8"  preload="metadata">
+					<source src="/Users/andrea/GitHub/multi-video-toggle/videos/video2-480.m4v" type="video/mp4"></source>
+				</video>
+			</div>
+
+			<div class="video-container">
+				<button class="fullscreen" id="fullscreen-9"></button>
+				<video id="video-9"  preload="metadata">
+					<source src="/Users/andrea/GitHub/multi-video-toggle/videos/video2-480.m4v" type="video/mp4"></source>
+				</video>
+			</div>
+
+			<div class="video-container">
+				<button class="fullscreen" id="fullscreen-10"></button>
+				<video id="video-10"  preload="metadata">
+					<source src="/Users/andrea/GitHub/multi-video-toggle/videos/video2-480.m4v" type="video/mp4"></source>
+				</video>
+			</div>
+		
+		</div>
 	</div>
 
 	<div class="bottom-container">
@@ -74,7 +146,7 @@
 		</defs>
 	</svg>
 
-	<script src="scripts/main.js" type="text/javascript"></script>
+	<script src="scripts/player.js" type="text/javascript"></script>
 	<script>
 		player.init();
 	</script>
