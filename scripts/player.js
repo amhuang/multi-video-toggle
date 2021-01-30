@@ -15,29 +15,41 @@ var player = function() {
         currTime,
         source,
         height = JSON.parse(h),
-        initHeightTime = height[0][1];
+        initHeightTime = height[0][1],
+        maxedVid;   // which video is fullscreen (starting at 1)
 
     /* ----- INITIALIZING FUNCTIONS ----- */
 
     function cache() {
 
+        // item(0) is fullscreen video. No source connected at first
+        // item(1) and subsequent are smaller videos while all are visible
         DOM.vid = document.querySelectorAll("video");
 
-        DOM.vidWindow = $('#all-videos');
+        // container for all small videos
+        DOM.allVidWindow = $('#all-videos');
+        // container for fullscreen video
+        DOM.fullVidWindow = $('#full-video');
 
+        // Buttons
         DOM.icons = $('.playback-icons use');
         DOM.play = $('#play');
+        DOM.cameras = $('.nav-container button');
+        DOM.maximize = $('.fullscreen');
+
         DOM.timeElapsed = $('#time-elapsed');
         DOM.duration = $('#duration');
-
         DOM.progress = $('#progress');
         DOM.seekInput = $('#seek-input');
         DOM.seekDiv = $('#seek-div');
 
-        DOM.cameras = $('.nav-container button');
         DOM.height = $('#height');
 
-        // setup();
+        // assign video source paths
+        /*
+        for (let i=0; i<10; i++)
+            DOM.cameras.eq(i).data('path', './videos/video' + o.toString() + '.MP4');
+            */
     }
 
     function bindEvents() {
@@ -45,9 +57,15 @@ var player = function() {
         $(document).on('keydown', keyScrub);
         // $(window).on('resize', resizing);
 
-        DOM.vid.item(0).addEventListener('loadedmetadata', initVideo);
-        DOM.vid.item(0).addEventListener('timeupdate', updateTime);
+        // initialize video
+        DOM.vid.item(1).addEventListener('loadedmetadata', initVideo);
 
+        // fullscreen buttons for each mini vid
+        for (let i=0; i < 11; i++) {
+            DOM.maximize.eq(i).on('click', fullScreen.bind(null, i));
+        }
+
+        // Progress bar use and updatess
         DOM.play.on('click', togglePlay);
         DOM.progress.on('click', renderProgress.bind(DOM.progress));
         DOM.seekInput.on({
@@ -55,17 +73,7 @@ var player = function() {
             mouseleave: function() { DOM.seekDiv.hide(); },
             input: skip
         });
-
-    }
-
-    /*
-    Attaches video path to an attribute of each camera button for swapping.
-    */
-
-    function setup() {
-        for (let i=0; i<10; i++)
-        DOM.cameras.eq(i).data('path', './videos/video' + o.toString() + '.MP4');
-        resizing();
+        DOM.vid.item(1).addEventListener('timeupdate', updateTimeHeight);
     }
 
     /* ----- EVENT HANDLERS ----- */
@@ -76,7 +84,8 @@ var player = function() {
     function togglePlay() {
         DOM.icons.toggleClass("hidden");
 
-        if (DOM.vid.item(0).paused || DOM.vid.item(0).ended) {
+        if (DOM.vid.item(1).paused || DOM.vid.item(1).ended
+                || DOM.vid.item(0).paused || DOM.vid.item(0).ended) {
             DOM.vid.forEach(function (vid) {
                 vid.play();
             });
@@ -85,26 +94,14 @@ var player = function() {
                 vid.pause();
             });
         }
-        currTime = DOM.vid.item(0).currentTime;
-    }
-
-    /*
-    Formats time given in t sec into a string min:sec
-    */
-    function formatTime(t) {
-        let min = Math.floor(Math.abs(t)/60);
-        let sec = Math.floor(Math.abs(t)%60);
-        if (sec < 10) {
-            sec = '0' + sec;
-        }
-        return min + ':' + sec; // returns string of time
+        currTime = DOM.vid.item(1).currentTime;
     }
 
     /*
     Gets, stores, and displays total duration of video
     */
     function initVideo() {
-        duration = Math.round(DOM.vid.item(0).duration);
+        duration = Math.round(DOM.vid.item(1).duration);
         let formatted = formatTime(duration);
 
         if (!isNaN(duration)) {
@@ -115,19 +112,35 @@ var player = function() {
             console.log("duration: " + duration);
             console.log("formattedDur: " + formatted);
         }
+
+        // Makes sure video doesn't expand beyond borders of window
+        $('.video-container').css({
+            "max-height": (window.innerHeight - 60) + "px",
+            "max-width": ((window.innerHeight - 60)*(16/9)) + "px",
+        });
     }
 
     /*
-    Updates the time displayed on the UI, as well as currTime which is
-    stored privately
+    Updates the time and height displayed on the UI. Entries from height are
+    taken 0.5 sec apart and are lined up with currTime of the videos
     */
 
-    function updateTime() {
-        currTime = DOM.vid.item(0).currentTime;
+    function updateTimeHeight() {
+
+        currTime = DOM.vid.item(1).currentTime;
+
+        // update values of progress bar, bar input, and time displayed
         DOM.seekInput.val(currTime);
         DOM.progress.val(currTime);
         DOM.timeElapsed.html(formatTime(currTime));
-        renderHeight(currTime);
+
+        // displaying height from height.json
+        let i = Math.round(currTime / 0.5);
+        try {
+            DOM.height.html("Height: " + height[i][0].toFixed(2) + " ft");
+        } catch {
+            console.log('out of range');
+        }
     }
 
     /*
@@ -139,7 +152,6 @@ var player = function() {
     function seeking(e) {
         skipTo = Math.round((e.offsetX / e.target.clientWidth) *
             parseInt(event.target.getAttribute('max'), 10));
-        console.log(skipTo);
 
         let formatted = formatTime(skipTo);
         // let rect = DOM.vid.getBoundingClientRect();
@@ -153,11 +165,8 @@ var player = function() {
     /*
     Use to skip forward to various points in the view
     */
-
     function skip() {
-
         DOM.vid.forEach( function(vid) {
-
             vid.currentTime = skipTo;
         });
         DOM.progress.val(skipTo);
@@ -168,13 +177,14 @@ var player = function() {
     /*
     Moves progress bar to wherever the mouse clicked on it.
     */
-
     function renderProgress(e) {
         let pos = (e.pageX  - (this.offsetLeft + this.offsetParent.offsetLeft)) / this.offsetWidth;
 
-        currTime = pos * DOM.vid.duration;
-        DOM.vid.item(0).currentTime = currTime;
-        console.log(Math.round);
+        currTime = pos * DOM.vid.item(1).duration;
+        DOM.vid.forEach( function(vid) {
+            vid.currentTime = currTime;
+        });
+
         seeking = false;
     }
 
@@ -182,7 +192,6 @@ var player = function() {
     Allows scrubbing with the left and right arrow keys. Each press moves
     the video by 0.5s.
     */
-
     function keyScrub(event) {
         if (skipTo == null) {
             skipTo = 0;
@@ -199,25 +208,59 @@ var player = function() {
     }
 
     /*
-    Loads the height from height.json and displays it based off of
-    the timestamp of the video. ENTRIES MUST BE TAKEN EVERY 0.5s APART
-    FOR HEIGHT AND VIDEO TO LINE UP
+    Allows for fullscreen capabilities
     */
+    function fullScreen(vid) {
 
-    function renderHeight(currTime) {
-        let i = Math.round(currTime / 0.5);
-        try {
-            DOM.height.html("Height: " + height[i][0].toFixed(2) + " ft");
-        } catch {
-            console.log('out of range');
+        // currently full screen (vid 0 fullscreen)
+        if (vid == 0) {
+
+            // remove 4k source
+            DOM.vid.item(0).children[0].src = "";
+            DOM.vid.item(0).load();
+
+            DOM.fullVidWindow.css("visibility", "hidden");
+            DOM.allVidWindow.css("visibility", "visible");
         }
 
+        // currently minimzed (vid 1+ are mini players)
+        else {
+            // add 4k source
+            let link = "./videos/video" + vid.toString() + "-4k.MP4";
+
+            DOM.vid.item(0).children[0].src = link;
+            DOM.vid.item(0).load();
+
+            console.log(DOM.vid.item(0).duration);
+            console.log(DOM.vid.item(0).currentTime);
+            //DOM.vid.item(0).currentTime = currTime;
+
+            DOM.allVidWindow.css("visibility", "hidden");
+            DOM.fullVidWindow.css("visibility", "visible");
+        }
+
+
+
+    }
+
+
+    /* ----- HELPER FUNCTIONS ----- */
+
+    /*
+    Formats time given in t sec into a string min:sec
+    */
+    function formatTime(t) {
+        let min = Math.floor(Math.abs(t)/60);
+        let sec = Math.floor(Math.abs(t)%60);
+        if (sec < 10) {
+            sec = '0' + sec;
+        }
+        return min + ':' + sec; // returns string of time
     }
 
 
     /*
     Swaps two videos upon clicking a button to go to a different camera.
-
     DEPRECIATED: viewing all cameras at once so no need to view
     */
 
@@ -237,20 +280,6 @@ var player = function() {
         } catch (e) {
             console.log(e);
         }
-    }
-
-    /*
-    Used in setup. Fixes sizing of video in 16:9 to make sure entire video
-    is visible in window.
-
-    DEPRECIATED: Videos not view in full window by default ATM
-    */
-
-    function resizing() {
-        DOM.vidWindow.css({
-            "max-height": (window.innerHeight - 120) + "px",
-            "max-width": ((window.innerHeight - 120)*(16/9)) + "px",
-        });
     }
 
     /* ----- PUBLIC METHODS & EXPORT ----- */
