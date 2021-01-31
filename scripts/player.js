@@ -55,10 +55,10 @@ var player = function() {
     function bindEvents() {
 
         $(document).on('keydown', keyScrub);
+        // $(window).on('resize', resizing);
 
         // initialize video
         DOM.vid.item(1).addEventListener('loadedmetadata', initVideo);
-        $(window).on("resize", fitWindow);
 
         // fullscreen buttons for each mini vid
         for (let i=0; i < 11; i++) {
@@ -95,7 +95,6 @@ var player = function() {
             });
         }
         currTime = DOM.vid.item(1).currentTime;
-        updateTimeHeight();
     }
 
     /*
@@ -109,12 +108,12 @@ var player = function() {
             DOM.seekInput.attr('max', duration);
             DOM.progress.attr('max', duration);
             DOM.duration.html(formatted);
-        }
-        fitWindow();
-    }
 
-    // Make video fit window whenever window size changes
-    function fitWindow() {
+            console.log("duration: " + duration);
+            console.log("formattedDur: " + formatted);
+        }
+
+        // Makes sure video doesn't expand beyond borders of window
         $('.video-container').css({
             "max-height": (window.innerHeight - 60) + "px",
             "max-width": ((window.innerHeight - 60)*(16/9)) + "px",
@@ -191,7 +190,7 @@ var player = function() {
 
     /*
     Allows scrubbing with the left and right arrow keys. Each press moves
-    the video by 0.5s. Space also pauses the video.
+    the video by 0.5s.
     */
     function keyScrub(event) {
         if (skipTo == null) {
@@ -202,29 +201,16 @@ var player = function() {
 
         if (event.key == "ArrowRight") {
             skipTo += 0.5;
-            skip();
         } else if (event.key == "ArrowLeft") {
             skipTo -= 0.5;
-            skip();
-        } else if (event.keyCode == 32) {
-            togglePlay();
         }
-
+        skip();
     }
 
     /*
-    Allows for fullscreen capability
+    Allows for fullscreen capabilities
     */
     function fullScreen(vid) {
-
-        // pause everything
-        DOM.icons.eq(0).removeClass("hidden");    // play icon
-        DOM.icons.eq(1).addClass("hidden"); // pause icon
-        DOM.vid.forEach(function (vid) {
-            vid.pause();
-        });
-        currTime = DOM.vid.item(1).currentTime;
-        updateTimeHeight();ss
 
         // currently full screen (vid 0 fullscreen)
         if (vid == 0) {
@@ -233,8 +219,8 @@ var player = function() {
             DOM.vid.item(0).children[0].src = "";
             DOM.vid.item(0).load();
 
-            DOM.fullVidWindow.css("display", "none");
-            DOM.allVidWindow.css("display", "block");
+            DOM.fullVidWindow.css("visibility", "hidden");
+            DOM.allVidWindow.css("visibility", "visible");
         }
 
         // currently minimzed (vid 1+ are mini players)
@@ -245,9 +231,16 @@ var player = function() {
             DOM.vid.item(0).children[0].src = link;
             DOM.vid.item(0).load();
 
-            DOM.fullVidWindow.css("display", "block");
-            DOM.allVidWindow.css("display", "none");
+            console.log(DOM.vid.item(0).duration);
+            console.log(DOM.vid.item(0).currentTime);
+            //DOM.vid.item(0).currentTime = currTime;
+
+            DOM.allVidWindow.css("visibility", "hidden");
+            DOM.fullVidWindow.css("visibility", "visible");
         }
+
+
+
     }
 
 

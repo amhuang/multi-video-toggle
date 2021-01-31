@@ -83,10 +83,11 @@ button.fullscreen:hover {
 }
 
 .video-container {
-	position: relative;
+	display: block;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
 	width: 100%;
-	height: auto;
-	margin: auto auto;
 }
 
 .mini-video {
@@ -151,6 +152,8 @@ button.fullscreen:hover {
 	background: white;
 	cursor: pointer;
 }
+
+/* ADDED STUFF */
 
 .video-progress {
   position: relative;
@@ -231,9 +234,6 @@ progress::-webkit-progress-value {
 .bottom-container button * {
   pointer-events: none;
 }
-.hidden {
-	display: none;
-}
 input[type=range] {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -256,6 +256,9 @@ input[type=range]::-webkit-slider-thumb {
   cursor: pointer;
   -webkit-appearance: none;
   margin-left: -1px;
+}
+.hidden {
+  display: none;
 }
 svg {
   width: 28px;
