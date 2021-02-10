@@ -1,9 +1,7 @@
 /*
-VIDEO SETTING SLIDERS
+VIDEO PLAYER AND OPERATION
 
-Functions that change the brightness/contrast of MJPG streams
-and hide/reveal and reset the sliders when the settings button is
-clicked.
+Provides basic functionality for video player, including scrubbing, play/pause, full screen. Also displays height as a function of time.
 */
 
 var player = function() {
@@ -22,21 +20,21 @@ var player = function() {
 
     function cache() {
 
-        // item(0) is fullscreen video. No source connected at first
-        // item(1) and subsequent are smaller videos while all are visible
+        // DOM.vid.item(0) is fullscreen video. No source connected at first
+        // DOM.vid.item(1+) are smaller videos all visible at once
         DOM.vid = document.querySelectorAll("video");
 
-        // container for all small videos
+        // containers for all small videos and full screen video
         DOM.allVidWindow = $('#all-videos');
-        // container for fullscreen video
         DOM.fullVidWindow = $('#full-video');
 
         // Buttons
         DOM.icons = $('.playback-icons use');
         DOM.play = $('#play');
-        DOM.cameras = $('.nav-container button');
+        // DOM.cameras = $('.nav-container button');
         DOM.maximize = $('.fullscreen');
 
+        // Progress bar items
         DOM.timeElapsed = $('#time-elapsed');
         DOM.duration = $('#duration');
         DOM.progress = $('#progress');
@@ -54,18 +52,17 @@ var player = function() {
 
     function bindEvents() {
 
-        $(document).on('keydown', keyScrub);
-        // $(window).on('resize', resizing);
-
         // initialize video
         DOM.vid.item(1).addEventListener('loadedmetadata', initVideo);
+        $(window).on("resize", fitWindow);
 
         // fullscreen buttons for each mini vid
         for (let i=0; i < 11; i++) {
             DOM.maximize.eq(i).on('click', fullScreen.bind(null, i));
         }
 
-        // Progress bar use and updatess
+        // Progress bar use and updates
+        $(document).on('keydown', keyScrub);
         DOM.play.on('click', togglePlay);
         DOM.progress.on('click', renderProgress.bind(DOM.progress));
         DOM.seekInput.on({
@@ -95,6 +92,7 @@ var player = function() {
             });
         }
         currTime = DOM.vid.item(1).currentTime;
+        updateTimeHeight();
     }
 
     /*
@@ -108,12 +106,14 @@ var player = function() {
             DOM.seekInput.attr('max', duration);
             DOM.progress.attr('max', duration);
             DOM.duration.html(formatted);
-
-            console.log("duration: " + duration);
-            console.log("formattedDur: " + formatted);
         }
+        fitWindow();
+    }
 
-        // Makes sure video doesn't expand beyond borders of window
+    /*
+    Make video fit window whenever window size changes
+    */
+    function fitWindow() {
         $('.video-container').css({
             "max-height": (window.innerHeight - 60) + "px",
             "max-width": ((window.innerHeight - 60)*(16/9)) + "px",
@@ -124,7 +124,6 @@ var player = function() {
     Updates the time and height displayed on the UI. Entries from height are
     taken 0.5 sec apart and are lined up with currTime of the videos
     */
-
     function updateTimeHeight() {
 
         currTime = DOM.vid.item(1).currentTime;
@@ -148,7 +147,6 @@ var player = function() {
     bar. Time calculated from the horizontal position of the mouse in the
     window in proportion to the total time of the videos
     */
-
     function seeking(e) {
         skipTo = Math.round((e.offsetX / e.target.clientWidth) *
             parseInt(event.target.getAttribute('max'), 10));
@@ -190,7 +188,7 @@ var player = function() {
 
     /*
     Allows scrubbing with the left and right arrow keys. Each press moves
-    the video by 0.5s.
+    the video by 0.5s. Space also pauses the video.
     */
     function keyScrub(event) {
         if (skipTo == null) {
@@ -201,16 +199,29 @@ var player = function() {
 
         if (event.key == "ArrowRight") {
             skipTo += 0.5;
+            skip();
         } else if (event.key == "ArrowLeft") {
             skipTo -= 0.5;
+            skip();
+        } else if (event.keyCode == 32) {
+            togglePlay();
         }
-        skip();
+
     }
 
     /*
-    Allows for fullscreen capabilities
+    Allows for fullscreen capability
     */
     function fullScreen(vid) {
+
+        // pause everything
+        DOM.icons.eq(0).removeClass("hidden");    // play icon
+        DOM.icons.eq(1).addClass("hidden"); // pause icon
+        DOM.vid.forEach(function (vid) {
+            vid.pause();
+        });
+        currTime = DOM.vid.item(1).currentTime;
+        updateTimeHeight();
 
         // currently full screen (vid 0 fullscreen)
         if (vid == 0) {
@@ -219,8 +230,8 @@ var player = function() {
             DOM.vid.item(0).children[0].src = "";
             DOM.vid.item(0).load();
 
-            DOM.fullVidWindow.css("visibility", "hidden");
-            DOM.allVidWindow.css("visibility", "visible");
+            DOM.fullVidWindow.css("display", "none");
+            DOM.allVidWindow.css("display", "block");
         }
 
         // currently minimzed (vid 1+ are mini players)
@@ -231,16 +242,9 @@ var player = function() {
             DOM.vid.item(0).children[0].src = link;
             DOM.vid.item(0).load();
 
-            console.log(DOM.vid.item(0).duration);
-            console.log(DOM.vid.item(0).currentTime);
-            //DOM.vid.item(0).currentTime = currTime;
-
-            DOM.allVidWindow.css("visibility", "hidden");
-            DOM.fullVidWindow.css("visibility", "visible");
+            DOM.fullVidWindow.css("display", "block");
+            DOM.allVidWindow.css("display", "none");
         }
-
-
-
     }
 
 

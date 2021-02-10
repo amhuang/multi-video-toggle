@@ -22,6 +22,9 @@ h2 {  /* Stats and data text */
 	font-size: 14pt;
 	letter-spacing: 0.009375em;
 }
+
+/*** BUTTONS AND SLIDERS ***/
+
 button.fullscreen {
 	-webkit-appearance: none;
 	background: url(../images/expand.png);
@@ -42,6 +45,73 @@ button.fullscreen {
 }
 button.fullscreen:hover {
 	opacity: 1;
+}
+button.show-editing {
+	-webkit-appearance: none;
+	background: url(../images/sliders.png);
+	top: 12px;
+	right: 42px;
+	background-color: transparent;
+	background-size: 100%;
+	outline: none;
+	border: none;
+	height: 20px;
+	width: 20px;
+	position: absolute;
+	opacity: .7;
+	-webkit-transition: .2s;
+    transition: opacity .2s;
+	z-index: 1;
+	cursor: pointer;
+}
+button.show-editing:hover {
+	opacity: 1;
+}
+.multi-slider {
+	position: absolute;
+	bottom: 10px;
+	width: 100%;
+	display: none;
+}
+.slider-box {
+	position: relative;
+	width: 90%;
+	height: 30px;
+	padding: 0 5% 0 5%; /* top right bottom left */
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	z-index: 1;
+}
+.edit-symbol {
+	height: 18px;
+	width: 18px;
+	padding-right: 10px;
+}
+.slider {
+	-webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 10px;
+    background: white;
+    outline: none;
+	border: 0;
+    opacity: .6;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+.slider:hover {
+	opacity: .9;
+}
+/*The circle on the slider*/
+.slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 15px;
+	height: 15px;
+	border-radius: 50%;
+	background: white;
+	cursor: pointer;
 }
 .page-container {
 	display: grid;
@@ -83,11 +153,10 @@ button.fullscreen:hover {
 }
 
 .video-container {
-	display: block;
-	position: absolute;
-	left: 50%;
-	transform: translateX(-50%);
+	position: relative;
 	width: 100%;
+	height: auto;
+	margin: auto auto;
 }
 
 .mini-video {
@@ -152,8 +221,6 @@ button.fullscreen:hover {
 	background: white;
 	cursor: pointer;
 }
-
-/* ADDED STUFF */
 
 .video-progress {
   position: relative;
@@ -234,6 +301,9 @@ progress::-webkit-progress-value {
 .bottom-container button * {
   pointer-events: none;
 }
+.hidden {
+	display: none;
+}
 input[type=range] {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -256,9 +326,6 @@ input[type=range]::-webkit-slider-thumb {
   cursor: pointer;
   -webkit-appearance: none;
   margin-left: -1px;
-}
-.hidden {
-  display: none;
 }
 svg {
   width: 28px;
